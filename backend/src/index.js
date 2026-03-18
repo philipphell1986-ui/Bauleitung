@@ -10,6 +10,15 @@ import connectionRoutes from './routes/connections.js';
 import groupRoutes from './routes/groups.js';
 import userRoutes from './routes/users.js';
 
+if (!process.env.JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('Fatal: JWT_SECRET must be set in production.');
+    process.exit(1);
+  }
+  process.env.JWT_SECRET = 'dev-secret-change-in-production';
+  console.warn('Warning: JWT_SECRET not set, using dev default. Set JWT_SECRET for production.');
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 

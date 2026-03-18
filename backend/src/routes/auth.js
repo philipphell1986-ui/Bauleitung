@@ -28,9 +28,13 @@ router.post('/signup', (req, res) => {
     'INSERT INTO users (email, username, password) VALUES (?, ?, ?)'
   ).run(email, username, hash);
 
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    return res.status(503).json({ error: 'Auth nicht konfiguriert (JWT_SECRET fehlt)' });
+  }
   const token = jwt.sign(
     { id: result.lastInsertRowid, email, username },
-    process.env.JWT_SECRET,
+    secret,
     { expiresIn: '24h' }
   );
 
@@ -57,9 +61,13 @@ router.post('/login', (req, res) => {
     return res.status(401).json({ error: 'Ungültige Anmeldedaten' });
   }
 
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    return res.status(503).json({ error: 'Auth nicht konfiguriert (JWT_SECRET fehlt)' });
+  }
   const token = jwt.sign(
     { id: user.id, email: user.email, username: user.username },
-    process.env.JWT_SECRET,
+    secret,
     { expiresIn: '24h' }
   );
 
