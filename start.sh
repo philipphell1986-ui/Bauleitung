@@ -8,6 +8,5 @@ export PUBLIC_DIR="/app/code/public"
 export PORT="8000"
 
 mkdir -p /app/data/uploads
-chown -R node:node /app/data
 
-exec /usr/bin/gosu node node /app/code/src/index.js
+exec node /app/code/src/index.js

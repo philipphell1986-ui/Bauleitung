@@ -38,11 +38,12 @@ app.get('/api/health', (_req, res) => {
 const publicDir = process.env.PUBLIC_DIR;
 if (publicDir && fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
-  app.get('*', (_req, res) => {
+  app.get('/*path', (_req, res) => {
     res.sendFile(path.join(publicDir, 'index.html'));
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`Backend läuft auf http://localhost:${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';
+app.listen(PORT, HOST, () => {
+  console.log(`Backend läuft auf http://${HOST}:${PORT}`);
 });
