@@ -22,7 +22,7 @@ async function handleSignup() {
 
   const success = await auth.signup(email.value, username.value, password.value);
   if (success) {
-    router.push('/dashboard');
+    router.push('/projects');
   }
 }
 </script>

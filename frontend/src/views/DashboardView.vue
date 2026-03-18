@@ -2,9 +2,11 @@
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
+import { useProjectsStore } from '../stores/projects.js';
 
 const router = useRouter();
 const auth = useAuthStore();
+const projectsStore = useProjectsStore();
 
 onMounted(() => {
   auth.fetchUser();
@@ -12,34 +14,54 @@ onMounted(() => {
 
 function handleLogout() {
   auth.logout();
+  projectsStore.clearProject();
   router.push('/login');
+}
+
+function switchProject() {
+  router.push('/projects');
 }
 </script>
 
 <template>
   <div class="dashboard-container">
     <header class="dashboard-header">
-      <h1>Bauleitung</h1>
-      <button class="logout-btn" @click="handleLogout">Abmelden</button>
+      <h1>Anschluss-Projekte</h1>
+      <div class="header-actions">
+        <span class="project-badge">{{ projectsStore.currentProject?.name }}</span>
+        <button class="switch-btn" @click="switchProject">Projekt wechseln</button>
+        <button class="logout-btn" @click="handleLogout">Abmelden</button>
+      </div>
     </header>
     <main class="dashboard-main">
       <div v-if="auth.loading" class="loading">Laden...</div>
-      <div v-else-if="auth.user" class="user-card">
-        <div class="avatar">{{ auth.user.username?.charAt(0).toUpperCase() }}</div>
-        <h2>Willkommen, {{ auth.user.username }}!</h2>
-        <div class="user-details">
-          <div class="detail-row">
-            <span class="label">E-Mail</span>
-            <span class="value">{{ auth.user.email }}</span>
+      <div v-else-if="auth.user" class="dashboard-content">
+        <div class="user-card">
+          <div class="avatar">{{ auth.user.username?.charAt(0).toUpperCase() }}</div>
+          <h2>Willkommen, {{ auth.user.username }}!</h2>
+          <p class="project-info">Projekt: {{ projectsStore.currentProject?.name }}</p>
+          <div class="user-details">
+            <div class="detail-row">
+              <span class="label">E-Mail</span>
+              <span class="value">{{ auth.user.email }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Benutzername</span>
+              <span class="value">{{ auth.user.username }}</span>
+            </div>
           </div>
-          <div class="detail-row">
-            <span class="label">Benutzername</span>
-            <span class="value">{{ auth.user.username }}</span>
-          </div>
-          <div v-if="auth.user.created_at" class="detail-row">
-            <span class="label">Registriert am</span>
-            <span class="value">{{ new Date(auth.user.created_at).toLocaleDateString('de-DE') }}</span>
-          </div>
+        </div>
+        <div class="nav-cards">
+          <router-link to="/connections" class="nav-card">
+            <span class="nav-icon">📋</span>
+            <h3>Hausanschlüsse</h3>
+            <p>Glasfaser & Strom – Daten verwalten, Excel importieren, CSV exportieren</p>
+          </router-link>
+          <router-link to="/groups" class="nav-card">
+            <span class="nav-icon">👥</span>
+            <h3>Benutzergruppen</h3>
+            <p>Gruppen verwalten und Mitglieder zuweisen</p>
+          </router-link>
         </div>
       </div>
     </main>
@@ -59,6 +81,31 @@ function handleLogout() {
   padding: 1rem 2rem;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.project-badge {
+  font-size: 0.9rem;
+  color: #4361ee;
+  font-weight: 500;
+}
+
+.switch-btn {
+  padding: 0.5rem 1rem;
+  background: #f0f0f0;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.switch-btn:hover {
+  background: #e5e7eb;
 }
 
 .dashboard-header h1 {
@@ -85,9 +132,62 @@ function handleLogout() {
 }
 
 .dashboard-main {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.dashboard-content {
   display: flex;
-  justify-content: center;
-  padding: 3rem 1rem;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.project-info {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.nav-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.nav-card {
+  display: block;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.nav-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.nav-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.nav-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: #1a1a2e;
+}
+
+.nav-card p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.4;
 }
 
 .loading {

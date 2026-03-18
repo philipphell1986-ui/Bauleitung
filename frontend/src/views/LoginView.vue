@@ -12,7 +12,7 @@ const password = ref('');
 async function handleLogin() {
   const success = await auth.login(email.value, password.value);
   if (success) {
-    router.push('/dashboard');
+    router.push('/projects');
   }
 }
 </script>
