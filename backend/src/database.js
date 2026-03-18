@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.join(__dirname, '..', 'bauleitung.db');
+const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '..', 'bauleitung.db');
 
 const db = new Database(dbPath);
 

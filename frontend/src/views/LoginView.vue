@@ -20,6 +20,7 @@ async function handleLogin() {
 <template>
   <div class="auth-container">
     <div class="auth-card">
+      <img src="/logo.svg" alt="Bauleitung" class="auth-logo" width="80" height="80" />
       <h1>Anmelden</h1>
       <form @submit.prevent="handleLogin">
         <div class="form-group">
@@ -72,6 +73,12 @@ async function handleLogin() {
   width: 100%;
   max-width: 420px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+}
+
+.auth-logo {
+  display: block;
+  margin: 0 auto 1rem;
+  border-radius: 14px;
 }
 
 .auth-card h1 {

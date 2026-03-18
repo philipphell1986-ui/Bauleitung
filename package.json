@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
     "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend",
-    "build": "npm run build --prefix frontend"
+    "build": "npm run build --prefix frontend",
+    "cloudron:icon": "node scripts/generate-cloudron-icon.mjs"
   },
   "devDependencies": {
-    "concurrently": "latest"
+    "concurrently": "latest",
+    "sharp": "^0.33.5"
   }
 }

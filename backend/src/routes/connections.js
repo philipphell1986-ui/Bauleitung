@@ -8,7 +8,7 @@ import db from '../database.js';
 import { authenticate } from '../middleware/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadDir = path.join(__dirname, '..', '..', 'uploads');
+const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '..', '..', 'uploads');
 
 const upload = multer({
   dest: uploadDir,

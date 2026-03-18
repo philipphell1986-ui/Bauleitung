@@ -1,0 +1,20 @@
+{
+  "id": "io.bauleitung.app",
+  "title": "Bauleitung",
+  "author": "Bauleitung",
+  "tagline": "Verwaltung von Anschluss-Projekten (Glasfaser & Strom)",
+  "description": "Fullstack-Webanwendung zur Verwaltung von Anschluss-Projekten mit Express/SQLite-Backend und Vue.js-Frontend. Funktionen: Projekte, Hausanschlüsse (Glasfaser/Strom), Excel/CSV-Import/Export, Benutzergruppen.",
+  "version": "1.0.0",
+  "manifestVersion": 2,
+  "healthCheckPath": "/api/health",
+  "httpPort": 8000,
+  "addons": {
+    "localstorage": {
+      "sqlite": {
+        "paths": ["/app/data/bauleitung.db"]
+      }
+    }
+  },
+  "tags": ["project", "hosting"],
+  "icon": "file://icon.png"
+}
