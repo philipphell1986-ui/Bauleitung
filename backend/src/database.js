@@ -82,4 +82,16 @@ try {
   // Spalten existieren bereits oder anderer Fehler – ignorieren
 }
 
+// Migration: Bearbeitungsstufen pro Hausanschluss
+try {
+  const info = db.prepare('PRAGMA table_info(connections)').all();
+  const hasStage = info.some((c) => c.name === 'stage');
+  if (!hasStage) {
+    db.exec(`ALTER TABLE connections ADD COLUMN stage TEXT DEFAULT 'hausbegehung'`);
+    db.exec(`UPDATE connections SET stage = 'hausbegehung' WHERE stage IS NULL`);
+  }
+} catch (_) {
+  // Spalte existiert bereits oder anderer Fehler – ignorieren
+}
+
 export default db;

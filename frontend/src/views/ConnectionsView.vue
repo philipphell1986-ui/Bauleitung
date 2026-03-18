@@ -9,11 +9,18 @@ const connections = ref([]);
 const loading = ref(false);
 const error = ref(null);
 const filterType = ref('');
+const filterStage = ref('');
 const showForm = ref(false);
 const editingId = ref(null);
 const importFile = ref(null);
 const importType = ref('glasfaser');
 const importLoading = ref(false);
+
+const STAGES = [
+  { value: 'hausbegehung', label: 'Hausbegehung' },
+  { value: 'tiefbau', label: 'Hausanschluss (Tiefbau)' },
+  { value: 'aktivierung', label: 'Aktivierung des Kunden' },
+];
 
 const form = ref({
   connection_type: 'glasfaser',
@@ -27,11 +34,14 @@ const form = ref({
   notes: '',
   latitude: null,
   longitude: null,
+  stage: 'hausbegehung',
 });
 
 const filteredConnections = computed(() => {
-  if (!filterType.value) return connections.value;
-  return connections.value.filter(c => c.connection_type === filterType.value);
+  let list = connections.value;
+  if (filterType.value) list = list.filter(c => c.connection_type === filterType.value);
+  if (filterStage.value) list = list.filter(c => (c.stage || 'hausbegehung') === filterStage.value);
+  return list;
 });
 
 const projectId = computed(() => projectsStore.currentProject?.id);
@@ -56,7 +66,7 @@ function openCreate() {
   form.value = {
     connection_type: 'glasfaser',
     name: '', address: '', street: '', postal_code: '', city: '', tel: '', email: '', notes: '',
-    latitude: null, longitude: null,
+    latitude: null, longitude: null, stage: 'hausbegehung',
   };
   showForm.value = true;
 }
@@ -75,6 +85,7 @@ function openEdit(c) {
     notes: c.notes || '',
     latitude: c.latitude != null ? c.latitude : null,
     longitude: c.longitude != null ? c.longitude : null,
+    stage: c.stage || 'hausbegehung',
   };
   showForm.value = true;
 }
@@ -222,6 +233,10 @@ onMounted(() => {
           <option value="glasfaser">Glasfaser</option>
           <option value="strom">Strom</option>
         </select>
+        <select v-model="filterStage" class="filter">
+          <option value="">Alle Stufen</option>
+          <option v-for="s in STAGES" :key="s.value" :value="s.value">{{ s.label }}</option>
+        </select>
       </div>
 
       <p v-if="error" class="error">{{ error }}</p>
@@ -233,6 +248,7 @@ onMounted(() => {
           <thead>
             <tr>
               <th>Typ</th>
+              <th>Stufe</th>
               <th>Name</th>
               <th>Adresse</th>
               <th>Telefon</th>
@@ -243,6 +259,7 @@ onMounted(() => {
           <tbody>
             <tr v-for="c in filteredConnections" :key="c.id">
               <td><span :class="['badge', c.connection_type]">{{ c.connection_type }}</span></td>
+              <td><span :class="['badge', 'stage', c.stage || 'hausbegehung']">{{ STAGES.find(s => s.value === (c.stage || 'hausbegehung'))?.label || 'Hausbegehung' }}</span></td>
               <td>{{ c.name || '–' }}</td>
               <td>{{ c.address || [c.street, c.postal_code, c.city].filter(Boolean).join(' ') || '–' }}</td>
               <td>{{ c.tel || '–' }}</td>
@@ -267,6 +284,12 @@ onMounted(() => {
               <select v-model="form.connection_type">
                 <option value="glasfaser">Glasfaser</option>
                 <option value="strom">Strom</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Bearbeitungsstufe</label>
+              <select v-model="form.stage">
+                <option v-for="s in STAGES" :key="s.value" :value="s.value">{{ s.label }}</option>
               </select>
             </div>
           </div>
@@ -505,6 +528,9 @@ onMounted(() => {
 }
 
 .toolbar {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
   margin-bottom: 1rem;
 }
 
@@ -572,6 +598,26 @@ onMounted(() => {
 .badge.strom {
   background: #fef3c7;
   color: #b45309;
+}
+
+.badge.stage {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.badge.stage.hausbegehung {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.badge.stage.tiefbau {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge.stage.aktivierung {
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .btn-sm {

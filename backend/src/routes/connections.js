@@ -36,15 +36,16 @@ router.get('/export/csv/:projectId', authenticate, (req, res) => {
     return res.status(403).json({ error: 'Keine Berechtigung' });
   }
   const connections = db.prepare(`
-    SELECT connection_type, name, address, street, postal_code, city, tel, email, notes, latitude, longitude
+    SELECT connection_type, name, address, street, postal_code, city, tel, email, notes, latitude, longitude, stage
     FROM connections WHERE project_id = ? ORDER BY name, id
   `).all(req.params.projectId);
-  const header = ['Typ', 'Name', 'Adresse', 'Straße', 'PLZ', 'Ort', 'Telefon', 'E-Mail', 'Notizen', 'Breitengrad', 'Längengrad'];
+  const header = ['Typ', 'Name', 'Adresse', 'Straße', 'PLZ', 'Ort', 'Telefon', 'E-Mail', 'Notizen', 'Breitengrad', 'Längengrad', 'Stufe'];
   const escape = (v) => {
     const s = String(v ?? '');
     return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const lines = [header.join(',')];
+  const stageLabels = { hausbegehung: 'Hausbegehung', tiefbau: 'Hausanschluss (Tiefbau)', aktivierung: 'Aktivierung des Kunden' };
   for (const c of connections) {
     lines.push([
       c.connection_type,
@@ -58,6 +59,7 @@ router.get('/export/csv/:projectId', authenticate, (req, res) => {
       escape(c.notes),
       c.latitude != null ? String(c.latitude) : '',
       c.longitude != null ? String(c.longitude) : '',
+      stageLabels[c.stage] || c.stage || 'Hausbegehung',
     ].join(','));
   }
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
@@ -87,7 +89,7 @@ router.get('/:id', authenticate, (req, res) => {
 
 /** Neuer Anschluss */
 router.post('/', authenticate, (req, res) => {
-  const { project_id, connection_type, name, address, street, postal_code, city, tel, email, notes, latitude, longitude } = req.body;
+  const { project_id, connection_type, name, address, street, postal_code, city, tel, email, notes, latitude, longitude, stage } = req.body;
   if (!project_id || !connection_type) {
     return res.status(400).json({ error: 'project_id und connection_type erforderlich' });
   }
@@ -104,10 +106,11 @@ router.post('/', authenticate, (req, res) => {
   };
   const lat = parseCoord(latitude);
   const lng = parseCoord(longitude);
+  const validStage = ['hausbegehung', 'tiefbau', 'aktivierung'].includes(stage) ? stage : 'hausbegehung';
   const result = db.prepare(`
-    INSERT INTO connections (project_id, connection_type, name, address, street, postal_code, city, tel, email, notes, latitude, longitude)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(project_id, connection_type, name || null, address || null, street || null, postal_code || null, city || null, tel || null, email || null, notes || null, lat, lng);
+    INSERT INTO connections (project_id, connection_type, name, address, street, postal_code, city, tel, email, notes, latitude, longitude, stage)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(project_id, connection_type, name || null, address || null, street || null, postal_code || null, city || null, tel || null, email || null, notes || null, lat, lng, validStage);
   const connection = db.prepare('SELECT * FROM connections WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json({ connection });
 });
@@ -118,7 +121,7 @@ router.patch('/:id', authenticate, (req, res) => {
   if (!conn || !hasProjectAccess(req.user.id, conn.project_id, 'member')) {
     return res.status(404).json({ error: 'Anschluss nicht gefunden' });
   }
-  const fields = ['connection_type', 'name', 'address', 'street', 'postal_code', 'city', 'tel', 'email', 'notes', 'latitude', 'longitude'];
+  const fields = ['connection_type', 'name', 'address', 'street', 'postal_code', 'city', 'tel', 'email', 'notes', 'latitude', 'longitude', 'stage'];
   const updates = [];
   const values = [];
   for (const f of fields) {
@@ -130,6 +133,8 @@ router.patch('/:id', authenticate, (req, res) => {
       } else if ((f === 'latitude' || f === 'longitude') && val !== null) {
         const n = parseFloat(val);
         values.push(Number.isFinite(n) ? n : null);
+      } else if (f === 'stage') {
+        values.push(['hausbegehung', 'tiefbau', 'aktivierung'].includes(val) ? val : 'hausbegehung');
       } else {
         values.push(val ?? null);
       }
