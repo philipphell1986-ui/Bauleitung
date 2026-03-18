@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useProjectsStore } from '../stores/projects.js';
 import api from '../api/index.js';
+import MapPicker from '../components/MapPicker.vue';
 
 const projectsStore = useProjectsStore();
 const connections = ref([]);
@@ -24,6 +25,8 @@ const form = ref({
   tel: '',
   email: '',
   notes: '',
+  latitude: null,
+  longitude: null,
 });
 
 const filteredConnections = computed(() => {
@@ -53,6 +56,7 @@ function openCreate() {
   form.value = {
     connection_type: 'glasfaser',
     name: '', address: '', street: '', postal_code: '', city: '', tel: '', email: '', notes: '',
+    latitude: null, longitude: null,
   };
   showForm.value = true;
 }
@@ -69,9 +73,32 @@ function openEdit(c) {
     tel: c.tel || '',
     email: c.email || '',
     notes: c.notes || '',
+    latitude: c.latitude != null ? c.latitude : null,
+    longitude: c.longitude != null ? c.longitude : null,
   };
   showForm.value = true;
 }
+
+function clearLocation() {
+  form.value.latitude = null;
+  form.value.longitude = null;
+}
+
+const mapPickerValue = computed({
+  get: () =>
+    form.value.latitude != null && form.value.longitude != null
+      ? { lat: form.value.latitude, lng: form.value.longitude }
+      : null,
+  set: (v) => {
+    if (v) {
+      form.value.latitude = v.lat;
+      form.value.longitude = v.lng;
+    } else {
+      form.value.latitude = null;
+      form.value.longitude = null;
+    }
+  },
+});
 
 async function save() {
   if (!canEdit.value) return;
@@ -278,6 +305,18 @@ onMounted(() => {
           <div class="form-group">
             <label>Notizen</label>
             <textarea v-model="form.notes" rows="2" placeholder="Notizen"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Standort</label>
+            <MapPicker v-model="mapPickerValue" height="280px" />
+            <button
+              v-if="form.latitude != null && form.longitude != null"
+              type="button"
+              class="btn-clear-location"
+              @click="clearLocation"
+            >
+              Standort löschen
+            </button>
           </div>
           <div class="form-actions">
             <button type="button" @click="showForm = false">Abbrechen</button>
@@ -574,7 +613,7 @@ onMounted(() => {
   background: #fff;
   padding: 1.5rem;
   border-radius: 12px;
-  max-width: 480px;
+  max-width: 560px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
@@ -635,5 +674,21 @@ onMounted(() => {
   background: #16a34a;
   color: #fff;
   border: none;
+}
+
+.btn-clear-location {
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.btn-clear-location:hover {
+  border-color: #e63946;
+  color: #e63946;
 }
 </style>

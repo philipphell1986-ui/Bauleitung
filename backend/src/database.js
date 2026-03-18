@@ -71,4 +71,15 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_group_users_user ON group_users(user_id);
 `);
 
+// Migration: latitude/longitude für connections
+try {
+  const info = db.prepare('PRAGMA table_info(connections)').all();
+  const hasLat = info.some((c) => c.name === 'latitude');
+  const hasLng = info.some((c) => c.name === 'longitude');
+  if (!hasLat) db.exec('ALTER TABLE connections ADD COLUMN latitude REAL');
+  if (!hasLng) db.exec('ALTER TABLE connections ADD COLUMN longitude REAL');
+} catch (_) {
+  // Spalten existieren bereits oder anderer Fehler – ignorieren
+}
+
 export default db;

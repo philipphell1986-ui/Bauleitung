@@ -36,10 +36,10 @@ router.get('/export/csv/:projectId', authenticate, (req, res) => {
     return res.status(403).json({ error: 'Keine Berechtigung' });
   }
   const connections = db.prepare(`
-    SELECT connection_type, name, address, street, postal_code, city, tel, email, notes
+    SELECT connection_type, name, address, street, postal_code, city, tel, email, notes, latitude, longitude
     FROM connections WHERE project_id = ? ORDER BY name, id
   `).all(req.params.projectId);
-  const header = ['Typ', 'Name', 'Adresse', 'Straße', 'PLZ', 'Ort', 'Telefon', 'E-Mail', 'Notizen'];
+  const header = ['Typ', 'Name', 'Adresse', 'Straße', 'PLZ', 'Ort', 'Telefon', 'E-Mail', 'Notizen', 'Breitengrad', 'Längengrad'];
   const escape = (v) => {
     const s = String(v ?? '');
     return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
@@ -56,6 +56,8 @@ router.get('/export/csv/:projectId', authenticate, (req, res) => {
       escape(c.tel),
       escape(c.email),
       escape(c.notes),
+      c.latitude != null ? String(c.latitude) : '',
+      c.longitude != null ? String(c.longitude) : '',
     ].join(','));
   }
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
@@ -85,7 +87,7 @@ router.get('/:id', authenticate, (req, res) => {
 
 /** Neuer Anschluss */
 router.post('/', authenticate, (req, res) => {
-  const { project_id, connection_type, name, address, street, postal_code, city, tel, email, notes } = req.body;
+  const { project_id, connection_type, name, address, street, postal_code, city, tel, email, notes, latitude, longitude } = req.body;
   if (!project_id || !connection_type) {
     return res.status(400).json({ error: 'project_id und connection_type erforderlich' });
   }
@@ -95,10 +97,17 @@ router.post('/', authenticate, (req, res) => {
   if (!hasProjectAccess(req.user.id, project_id, 'member')) {
     return res.status(403).json({ error: 'Keine Berechtigung' });
   }
+  const parseCoord = (v) => {
+    if (v == null || v === '') return null;
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : null;
+  };
+  const lat = parseCoord(latitude);
+  const lng = parseCoord(longitude);
   const result = db.prepare(`
-    INSERT INTO connections (project_id, connection_type, name, address, street, postal_code, city, tel, email, notes)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(project_id, connection_type, name || null, address || null, street || null, postal_code || null, city || null, tel || null, email || null, notes || null);
+    INSERT INTO connections (project_id, connection_type, name, address, street, postal_code, city, tel, email, notes, latitude, longitude)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(project_id, connection_type, name || null, address || null, street || null, postal_code || null, city || null, tel || null, email || null, notes || null, lat, lng);
   const connection = db.prepare('SELECT * FROM connections WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json({ connection });
 });
@@ -109,13 +118,21 @@ router.patch('/:id', authenticate, (req, res) => {
   if (!conn || !hasProjectAccess(req.user.id, conn.project_id, 'member')) {
     return res.status(404).json({ error: 'Anschluss nicht gefunden' });
   }
-  const fields = ['connection_type', 'name', 'address', 'street', 'postal_code', 'city', 'tel', 'email', 'notes'];
+  const fields = ['connection_type', 'name', 'address', 'street', 'postal_code', 'city', 'tel', 'email', 'notes', 'latitude', 'longitude'];
   const updates = [];
   const values = [];
   for (const f of fields) {
     if (req.body[f] !== undefined) {
       updates.push(`${f} = ?`);
-      values.push(req.body[f] ?? null);
+      const val = req.body[f];
+      if ((f === 'latitude' || f === 'longitude') && (val === '' || val == null)) {
+        values.push(null);
+      } else if ((f === 'latitude' || f === 'longitude') && val !== null) {
+        const n = parseFloat(val);
+        values.push(Number.isFinite(n) ? n : null);
+      } else {
+        values.push(val ?? null);
+      }
     }
   }
   if (updates.length > 0) {
@@ -146,6 +163,8 @@ const COLUMN_MAP = {
   city: ['city', 'Ort', 'stadt', 'Stadt'],
   tel: ['tel', 'telefon', 'Telefon', 'tel', 'phone'],
   email: ['email', 'Email', 'E-Mail', 'e-mail', 'mail'],
+  latitude: ['latitude', 'Breitengrad', 'lat', 'Latitude'],
+  longitude: ['longitude', 'Längengrad', 'lng', 'Longitude'],
 };
 
 function mapRow(row, connectionType) {
@@ -155,6 +174,12 @@ function mapRow(row, connectionType) {
       if (v != null && String(v).trim()) return String(v).trim();
     }
     return null;
+  };
+  const parseCoord = (keys) => {
+    const v = get(keys);
+    if (v == null) return null;
+    const n = parseFloat(String(v).replace(',', '.'));
+    return Number.isFinite(n) ? n : null;
   };
   return {
     connection_type: connectionType,
@@ -166,6 +191,8 @@ function mapRow(row, connectionType) {
     tel: get(COLUMN_MAP.tel),
     email: get(COLUMN_MAP.email),
     notes: get(['notes', 'Notizen', 'Bemerkung']),
+    latitude: parseCoord(COLUMN_MAP.latitude),
+    longitude: parseCoord(COLUMN_MAP.longitude),
   };
 }
 
@@ -199,15 +226,15 @@ router.post('/import/:projectId', authenticate, upload.single('file'), (req, res
       rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
     }
     const insert = db.prepare(`
-      INSERT INTO connections (project_id, connection_type, name, address, street, postal_code, city, tel, email, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO connections (project_id, connection_type, name, address, street, postal_code, city, tel, email, notes, latitude, longitude)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const projectId = parseInt(req.params.projectId, 10);
     let imported = 0;
     for (const row of rows) {
       const data = mapRow(row, connectionType);
       if (data.name || data.address || data.tel || data.email) {
-        insert.run(projectId, data.connection_type, data.name, data.address, data.street, data.postal_code, data.city, data.tel, data.email, data.notes);
+        insert.run(projectId, data.connection_type, data.name, data.address, data.street, data.postal_code, data.city, data.tel, data.email, data.notes, data.latitude, data.longitude);
         imported++;
       }
     }
