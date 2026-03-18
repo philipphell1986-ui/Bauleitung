@@ -105,8 +105,8 @@ async function handleLogin() {
 
 .form-group input:focus {
   outline: none;
-  border-color: #4361ee;
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
 }
 
 .error {
@@ -118,7 +118,7 @@ async function handleLogin() {
 button {
   width: 100%;
   padding: 0.7rem;
-  background: #4361ee;
+  background: #16a34a;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -130,7 +130,7 @@ button {
 }
 
 button:hover:not(:disabled) {
-  background: #3a56d4;
+  background: #15803d;
 }
 
 button:disabled {
@@ -146,7 +146,7 @@ button:disabled {
 }
 
 .switch-link a {
-  color: #4361ee;
+  color: #16a34a;
   text-decoration: none;
   font-weight: 500;
 }

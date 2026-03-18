@@ -311,7 +311,7 @@ onMounted(() => {
 }
 
 .back {
-  color: #4361ee;
+  color: #16a34a;
   text-decoration: none;
   font-size: 0.9rem;
 }
@@ -339,7 +339,7 @@ onMounted(() => {
 }
 
 .btn-primary {
-  background: #4361ee;
+  background: #16a34a;
   color: #fff;
   border: none;
 }
@@ -395,13 +395,13 @@ onMounted(() => {
 }
 
 .import-select:hover {
-  border-color: #4361ee;
+  border-color: #16a34a;
 }
 
 .import-select:focus {
   outline: none;
-  border-color: #4361ee;
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
 }
 
 .file-input-wrap {
@@ -437,9 +437,9 @@ onMounted(() => {
 }
 
 .file-input-label:hover {
-  border-color: #4361ee;
-  background: #eef2ff;
-  color: #4361ee;
+  border-color: #16a34a;
+  background: #dcfce7;
+  color: #16a34a;
 }
 
 .btn-import {
@@ -447,7 +447,7 @@ onMounted(() => {
   padding: 0 1.25rem;
   border: none;
   border-radius: 8px;
-  background: #4361ee;
+  background: #16a34a;
   color: #fff;
   font-size: 0.9rem;
   font-weight: 500;
@@ -456,7 +456,7 @@ onMounted(() => {
 }
 
 .btn-import:hover:not(:disabled) {
-  background: #3651d4;
+  background: #15803d;
 }
 
 .btn-import:disabled {
@@ -484,12 +484,12 @@ onMounted(() => {
 }
 
 .filter:hover {
-  border-color: #4361ee;
+  border-color: #16a34a;
 }
 
 .filter:focus {
   outline: none;
-  border-color: #4361ee;
+  border-color: #16a34a;
 }
 
 .table-wrap {
@@ -526,8 +526,8 @@ onMounted(() => {
 }
 
 .badge.glasfaser {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .badge.strom {
@@ -632,7 +632,7 @@ onMounted(() => {
 }
 
 .form-actions button[type="submit"] {
-  background: #4361ee;
+  background: #16a34a;
   color: #fff;
   border: none;
 }

@@ -241,7 +241,7 @@ onMounted(() => {
 }
 
 .back {
-  color: #4361ee;
+  color: #16a34a;
   text-decoration: none;
   font-size: 0.9rem;
 }
@@ -254,7 +254,7 @@ onMounted(() => {
 
 .btn-primary {
   padding: 0.5rem 1rem;
-  background: #4361ee;
+  background: #16a34a;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -324,7 +324,7 @@ onMounted(() => {
 
 .member-count {
   font-size: 0.8rem;
-  color: #4361ee;
+  color: #16a34a;
 }
 
 .expand {
@@ -453,7 +453,7 @@ onMounted(() => {
 }
 
 .form-actions button[type="submit"] {
-  background: #4361ee;
+  background: #16a34a;
   color: #fff;
   border: none;
 }

@@ -91,7 +91,7 @@ function switchProject() {
 
 .project-badge {
   font-size: 0.9rem;
-  color: #4361ee;
+  color: #16a34a;
   font-weight: 500;
 }
 
@@ -209,7 +209,7 @@ function switchProject() {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #4361ee;
+  background: #16a34a;
   color: #fff;
   font-size: 1.5rem;
   font-weight: 700;

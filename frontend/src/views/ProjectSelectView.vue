@@ -151,7 +151,7 @@ function handleLogout() {
 
 .btn-primary {
   padding: 0.65rem 1.25rem;
-  background: #4361ee;
+  background: #16a34a;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -160,7 +160,7 @@ function handleLogout() {
 }
 
 .btn-primary:hover {
-  background: #3a56d4;
+  background: #15803d;
 }
 
 .create-form {
@@ -217,7 +217,7 @@ function handleLogout() {
 }
 
 .form-actions button[type="submit"] {
-  background: #4361ee;
+  background: #16a34a;
   color: #fff;
   border: none;
 }
@@ -259,8 +259,8 @@ function handleLogout() {
 }
 
 .project-card:hover {
-  border-color: #4361ee;
-  box-shadow: 0 2px 8px rgba(67, 97, 238, 0.15);
+  border-color: #16a34a;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15);
 }
 
 .card-name {
@@ -276,7 +276,7 @@ function handleLogout() {
 
 .card-role {
   font-size: 0.75rem;
-  color: #4361ee;
+  color: #16a34a;
   margin-top: 0.5rem;
 }
 
